@@ -1,9 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
-
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-
 import connectDB from "../../config/db";
 import { User } from "../../models/User";
 import { UserRole } from "../../types/roles";

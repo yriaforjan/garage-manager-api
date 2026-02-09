@@ -2,7 +2,7 @@ import { Schema, model, Document, Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import { UserRole } from "../types/roles";
 
-interface UserDocument extends Document {
+export interface UserDocument extends Document {
   name: string;
   email: string;
   passwordHash: string;
@@ -49,6 +49,4 @@ UserSchema.methods.comparePassword = async function (candidate: string) {
   return bcrypt.compare(candidate, this.passwordHash);
 };
 
-const User = model<UserDocument>("User", UserSchema);
-
-export { User, UserDocument };
+export const User = model<UserDocument>("User", UserSchema);

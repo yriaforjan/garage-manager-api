@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: {
     userId: string;
     role: string;
@@ -9,7 +9,7 @@ interface AuthRequest extends Request {
   };
 }
 
-const isAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const isAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -26,5 +26,3 @@ const isAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
     return res.status(401).json({ message: "⛔️ Invalid token" });
   }
 };
-
-export { AuthRequest, isAuth };
