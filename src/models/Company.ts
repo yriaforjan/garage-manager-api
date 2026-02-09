@@ -23,13 +23,19 @@ const CompanySchema = new Schema<CompanyDocument>(
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
+      uppercase: true,
+      trim: true,
+      match: [
+        /^([A-Z]\d{8}|\d{8}[A-Z])$/,
+        "El documento debe ser un NIF o CIF válido",
+      ],
     },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
+      trim: true,
     },
     address: {
       type: String,
@@ -38,6 +44,11 @@ const CompanySchema = new Schema<CompanyDocument>(
     phone: {
       type: String,
       required: true,
+      trim: true,
+      match: [
+        /^[6789]\d{8}$/,
+        "El teléfono debe ser un número válido de 9 dígitos",
+      ],
     },
     logo: {
       type: String,
