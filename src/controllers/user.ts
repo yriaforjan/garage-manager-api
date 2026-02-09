@@ -9,7 +9,7 @@ const login = async (req: Request, res: Response) => {
     // 1. Validación básica
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message: "⚠️ Email and password are required",
       });
     }
 
@@ -17,7 +17,7 @@ const login = async (req: Request, res: Response) => {
     const user = await User.findOne({ email, active: true });
     if (!user) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: "⛔️ Invalid credentials",
       });
     }
 
@@ -25,7 +25,7 @@ const login = async (req: Request, res: Response) => {
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: "⛔️ Invalid credentials",
       });
     }
 
@@ -41,7 +41,7 @@ const login = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "❌ Internal server error",
     });
   }
 };

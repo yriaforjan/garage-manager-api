@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8000;
 const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
-    console.log(`Servidor levantado en http://localhost:${PORT} ✅`);
+    console.log(`Server running on http://localhost:${PORT} ✅`);
   });
 };
 
