@@ -9,7 +9,7 @@ const register = async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, password, role, companyId } = req.body;
 
-    // 1. Solo ADMIN o SUPER_ADMIN
+    // 1️⃣ Solo ADMIN o SUPER_ADMIN pueden crear usuarios
     if (
       req.user?.role !== UserRole.ADMIN &&
       req.user?.role !== UserRole.SUPER_ADMIN
@@ -17,18 +17,11 @@ const register = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: "⛔️ Forbidden" });
     }
 
-    // 2. Validación base
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({
-        message: "⚠️ Missing required fields",
-      });
-    }
-
-    // 3. Determinar companyId correcto
+    // 2️⃣ Reglas de roles según quién crea
     let finalCompanyId: string | undefined;
 
     if (req.user.role === UserRole.SUPER_ADMIN) {
-      // SuperAdmin DEBE indicar empresa
+      // SUPER_ADMIN → puede crear cualquier rol
       if (!companyId) {
         return res.status(400).json({
           message: "⚠️ companyId is required for SuperAdmin",
@@ -36,11 +29,26 @@ const register = async (req: AuthRequest, res: Response) => {
       }
       finalCompanyId = companyId;
     } else {
-      // Admin normal → su empresa
+      // ADMIN → solo roles internos
+      const allowedRoles = [UserRole.MECHANIC, UserRole.ADMINISTRATIVE];
+
+      if (!allowedRoles.includes(role)) {
+        return res.status(400).json({
+          message: "⛔️ Admin cannot create this role",
+        });
+      }
+
       finalCompanyId = req.user.companyId;
     }
 
-    // 4. Evitar duplicados
+    // 3️⃣ Validación base
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({
+        message: "⚠️ Missing required fields",
+      });
+    }
+
+    // 4️⃣ Evitar duplicados
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -48,10 +56,9 @@ const register = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // 5. Hash password
+    // 5️⃣ Crear usuario
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // 6. Crear usuario
     const newUser = await User.create({
       name,
       email,
@@ -73,7 +80,9 @@ const register = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "❌ Internal server error" });
+    return res.status(500).json({
+      message: "❌ Internal server error",
+    });
   }
 };
 

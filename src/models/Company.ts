@@ -3,7 +3,6 @@ import { Schema, model, Document } from "mongoose";
 export interface CompanyDocument extends Document {
   name: string;
   document: string;
-  email: string;
   address: string;
   phone: string;
   logo?: string;
@@ -29,13 +28,6 @@ const CompanySchema = new Schema<CompanyDocument>(
         /^([A-Z]\d{8}|\d{8}[A-Z])$/,
         "El documento debe ser un NIF o CIF válido",
       ],
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
     },
     address: {
       type: String,
