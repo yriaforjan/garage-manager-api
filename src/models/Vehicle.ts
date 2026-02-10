@@ -60,7 +60,14 @@ const vehicleSchema = new Schema(
         },
 
         kms: { type: Number, min: [0, "Los kilómetros no pueden ser negativos"] },
+        companyId: {
+            type: Schema.Types.ObjectId,
+            ref: "Company",
+            required: true,
+            index: true,
+        },
     },
+
     {
         timestamps: true, // crea createdAt y updatedAt automáticamente
         versionKey: false, // quita __v
@@ -72,7 +79,7 @@ const vehicleSchema = new Schema(
  * - Este índice acelera queries del tipo:
  *   Vehicle.find({ client: clientId })
  */
-vehicleSchema.index({ client: 1 });
+vehicleSchema.index({ client: 1, companyId: 1 });
 
 /**
  * TIPO TS DEL DOCUMENTO
