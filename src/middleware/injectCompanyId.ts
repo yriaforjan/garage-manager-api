@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "./isAuth";
 import { UserRole } from "../types/roles";
 
-const injectCompanyId = (
+export const injectCompanyId = (
   req: AuthRequest,
   _res: Response,
   next: NextFunction,
@@ -16,5 +16,3 @@ const injectCompanyId = (
 
   next();
 };
-
-export default injectCompanyId;

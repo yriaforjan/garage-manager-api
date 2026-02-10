@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { register, login } from "../controllers/user";
+import { register, login, getAllUsers, deleteUser } from "../controllers/user";
 import { isAuth } from "../middleware/isAuth";
 import { isAuthorizedRole } from "../middleware/isAuthorizedRole";
+import { injectCompanyId } from "../middleware/injectCompanyId";
 import { UserRole } from "../types/roles";
-import injectCompanyId from "../middleware/injectCompanyId";
 
 const userRouter = Router();
 
@@ -17,6 +17,8 @@ userRouter.use(
   isAuthorizedRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]),
 );
 // rutas protegidas:
+userRouter.get("/", getAllUsers);
 userRouter.post("/register", register);
+userRouter.delete("/:id", deleteUser);
 
 export default userRouter;

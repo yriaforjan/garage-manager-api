@@ -113,4 +113,73 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-export { login, register };
+const getAllUsers = async (req: AuthRequest, res: Response) => {
+  try {
+    let query: any = {};
+
+    if (req.user!.role === UserRole.SUPER_ADMIN) {
+      if (req.query.companyId) {
+        query.companyId = req.query.companyId;
+      }
+    } else {
+      query.companyId = req.companyId;
+    }
+
+    const users = await User.find(query)
+      .select("-passwordHash")
+      .populate({
+        path: "companyId",
+        select: "name document active",
+      })
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      total: users.length,
+      users,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "❌ Internal server error",
+    });
+  }
+};
+
+// DELETE no elimina, solo desactiva!
+const deleteUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // admin solo su empresa y no otros admins
+    if (req.user!.role === UserRole.ADMIN) {
+      if (user.companyId?.toString() !== req.companyId) {
+        return res.status(403).json({ message: "⛔️ Forbidden" });
+      }
+
+      if (user.role === UserRole.ADMIN) {
+        return res.status(400).json({
+          message: "⛔️ Admin cannot delete another admin",
+        });
+      }
+    }
+
+    user.active = false;
+    await user.save();
+
+    return res.json({
+      message: "🗑 User deactivated",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "❌ Internal server error",
+    });
+  }
+};
+
+export { login, register, getAllUsers, deleteUser };
