@@ -4,15 +4,19 @@ import { UserRole } from "../types/roles";
 
 export const injectCompanyId = (
   req: AuthRequest,
-  _res: Response,
-  next: NextFunction,
+  res: Response,
+  next: NextFunction
 ) => {
+  // si no hay user, seguimos (será cosa de isAuth si esto es ruta protegida)
   if (!req.user) return next();
 
-  // todos los usuarios menos superadmin trabajan bajo una empresa
+  // todos los usuarios menos SUPER_ADMIN trabajan bajo una empresa
   if (req.user.role !== UserRole.SUPER_ADMIN) {
-    req.companyId = req.user.companyId;
+    if (!req.user.companyId) {
+      return res.status(401).json({ error: "companyId faltante en el usuario" });
+    }
+    req.companyId = String(req.user.companyId);
   }
 
-  next();
+  return next();
 };
