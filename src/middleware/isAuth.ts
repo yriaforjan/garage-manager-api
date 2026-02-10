@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
     role: string;
     companyId?: string;
   };
+  companyId?: string;
 }
 
 export const isAuth = (req: AuthRequest, res: Response, next: NextFunction) => {

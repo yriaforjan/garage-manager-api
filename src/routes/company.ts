@@ -6,11 +6,10 @@ import { UserRole } from "../types/roles";
 
 const companyRouter = Router();
 
-companyRouter.post(
-  "/new",
-  isAuth,
-  isAuthorizedRole([UserRole.SUPER_ADMIN]),
-  createCompany,
-);
+// todas las rutas de company requieren rol de superadmin
+companyRouter.use(isAuth, isAuthorizedRole([UserRole.SUPER_ADMIN]));
+
+// rutas:
+companyRouter.post("/new", createCompany);
 
 export default companyRouter;
