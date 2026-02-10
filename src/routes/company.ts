@@ -1,10 +1,16 @@
 import { Router } from "express";
 import { createCompany } from "../controllers/company";
 import { isAuth } from "../middleware/isAuth";
-import { isSuperAdmin } from "../middleware/isSuperAdmin";
+import { isAuthorizedRole } from "../middleware/isAuthorizedRole";
+import { UserRole } from "../types/roles";
 
 const companyRouter = Router();
 
-companyRouter.post("/new", isAuth, isSuperAdmin, createCompany);
+companyRouter.post(
+  "/new",
+  isAuth,
+  isAuthorizedRole([UserRole.SUPER_ADMIN]),
+  createCompany,
+);
 
 export default companyRouter;
