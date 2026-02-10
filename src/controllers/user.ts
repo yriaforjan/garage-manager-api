@@ -9,19 +9,16 @@ const register = async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, password, role, companyId } = req.body;
 
-    // 1️⃣ Solo ADMIN o SUPER_ADMIN pueden crear usuarios
-    if (
-      req.user?.role !== UserRole.ADMIN &&
-      req.user?.role !== UserRole.SUPER_ADMIN
-    ) {
-      return res.status(403).json({ message: "⛔️ Forbidden" });
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({
+        message: "⚠️ Missing required fields",
+      });
     }
 
-    // 2️⃣ Reglas de roles según quién crea
     let finalCompanyId: string | undefined;
 
-    if (req.user.role === UserRole.SUPER_ADMIN) {
-      // SUPER_ADMIN → puede crear cualquier rol
+    if (req.user!.role === UserRole.SUPER_ADMIN) {
+      // SuperAdmin puede crear cualquier rol
       if (!companyId) {
         return res.status(400).json({
           message: "⚠️ companyId is required for SuperAdmin",
@@ -29,7 +26,7 @@ const register = async (req: AuthRequest, res: Response) => {
       }
       finalCompanyId = companyId;
     } else {
-      // ADMIN → solo roles internos
+      // Admin solo puede crear roles internos
       const allowedRoles = [UserRole.MECHANIC, UserRole.ADMINISTRATIVE];
 
       if (!allowedRoles.includes(role)) {
@@ -38,17 +35,9 @@ const register = async (req: AuthRequest, res: Response) => {
         });
       }
 
-      finalCompanyId = req.user.companyId;
+      finalCompanyId = req.companyId;
     }
 
-    // 3️⃣ Validación base
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({
-        message: "⚠️ Missing required fields",
-      });
-    }
-
-    // 4️⃣ Evitar duplicados
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -56,7 +45,6 @@ const register = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // 5️⃣ Crear usuario
     const passwordHash = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
@@ -90,14 +78,12 @@ const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Validación básica
     if (!email || !password) {
       return res.status(400).json({
         message: "⚠️ Email and password are required",
       });
     }
 
-    // 2. Buscar usuario activo
     const user = await User.findOne({ email, active: true });
     if (!user) {
       return res.status(401).json({
@@ -105,7 +91,6 @@ const login = async (req: Request, res: Response) => {
       });
     }
 
-    // 3. Comparar contraseña
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       return res.status(401).json({
@@ -113,14 +98,12 @@ const login = async (req: Request, res: Response) => {
       });
     }
 
-    // 4. Generar JWT
     const token = generateToken({
       userId: user.id,
       role: user.role,
       companyId: user.companyId?.toString(),
     });
 
-    // 5. Respuesta
     return res.json({ token });
   } catch (error) {
     console.error(error);
