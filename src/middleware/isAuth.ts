@@ -1,15 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt";
+import { verifyToken, JwtPayload } from "../utils/jwt";
 import { UserRole } from "../types/roles";
 
-export type JwtUser = {
-  userId: string;
-  role: UserRole;
-  companyId?: string;
-};
-
 export interface AuthRequest extends Request {
-  user?: JwtUser;
+  user?: JwtPayload;
   companyId?: string;
 }
 
@@ -24,7 +18,7 @@ export const isAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
 
   try {
     // Ideal: que verifyToken esté tipado y devuelva JwtUser
-    const decoded = verifyToken(token) as JwtUser;
+    const decoded = verifyToken(token);
 
     // Extra safety: comprobar mínimos
     if (!decoded?.userId || !decoded?.role) {
