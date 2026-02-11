@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken, JwtPayload } from "../utils/jwt";
-import { UserRole } from "../types/roles";
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
