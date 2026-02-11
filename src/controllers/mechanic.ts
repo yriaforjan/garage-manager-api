@@ -95,3 +95,36 @@ export const getMechanicById = async (req: AuthRequest, res: Response, _next: Ne
         return res.status(500).json({ error: "Error buscando el mecánico ❌" })
     }
 }
+
+export const postMechanic = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+    try {
+        //companyId viene del middleware injectCompanyId
+        if (!req.companyId) {
+            return res.status(401).json({ error: "companyId no disponible ⚠️" });
+        }
+
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ error: "Faltan datos de mecánico ⚠️ " });
+        }
+
+        const newMechanic = new Mechanic({
+            ...req.body, // name, telephone, email, notes
+            companyId: req.companyId, // viene del middleware injectCompanyId
+        });
+
+        const mechanicSaved = await newMechanic.save();
+
+        return res.status(201).json({
+            message: "Mecánico creado exitosamente ✅",
+            mechanic: mechanicSaved,
+        })
+
+    } catch (error: any) {
+        if (error?.name === "ValidationError") {
+            return res.status(400).json({ error: "Datos de mecánico inválidos ⚠️" });
+        }
+
+        return res.status(500).json({ error: "Error al crear el mecánico ❌" })
+
+    }
+}
