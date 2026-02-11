@@ -128,3 +128,81 @@ export const postMechanic = async (req: AuthRequest, res: Response, _next: NextF
 
     }
 }
+
+export const updateMechanic = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+    try {
+        // companyId viene del middleware injectCompanyId
+        if (!req.companyId) {
+            return res.status(401).json({ error: "⚠️ companyId no disponible" });
+        }
+
+        const { id } = req.params;
+
+        // Quitamos campos que no deben tocarse desde fuera
+        const { _id, companyId, ...data } = req.body as Record<string, unknown>;
+
+        const mechanicUpdated = await Mechanic.findOneAndUpdate(
+            { _id: id, companyId: req.companyId },
+            data,
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
+
+        if (!mechanicUpdated) {
+            return res.status(404).json({ error: "Mecánico no encontrado ⚠️" });
+        }
+
+        return res.status(200).json({
+            message: "Mecánico actualizado ✅",
+            mechanic: mechanicUpdated,
+        });
+    } catch (error: any) {
+        if (error?.name === "CastError" || error?.name === "ValidationError") {
+            return res.status(400).json({
+                error: "La solicitud contiene datos inválidos ⚠️",
+            });
+        }
+
+        return res.status(500).json({
+            error: "Error al actualizar el mecánico ❌",
+        });
+    }
+};
+
+export const deleteMechanic = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+    try {
+        // companyId viene del middleware injectCompanyId
+        if (!req.companyId) {
+            return res.status(401).json({ error: "⚠️ companyId no disponible" });
+        }
+
+        const { id } = req.params;
+
+        const mechanicDeleted = await Mechanic.findOneAndDelete({
+            _id: id,
+            companyId: req.companyId,
+        });
+
+        if (!mechanicDeleted) {
+            return res.status(404).json({ error: "Mecánico no encontrado ⚠️" });
+        }
+
+        return res.status(200).json({
+            message: "Mecánico eliminado ✅",
+            mechanic: mechanicDeleted,
+        });
+    } catch (error: any) {
+        if (error?.name === "CastError") {
+            return res.status(400).json({ error: "ID inválido ⚠️" });
+        }
+
+        return res.status(500).json({
+            error: "Error al eliminar el mecánico ❌",
+        });
+    }
+};
+
+//como delante de cada funcion ponemos export, luego no hace falta exportarlas aquí.
+//export { getMechanics, getMechanicById, postMechanic, updateMechanic, deleteMechanic };
