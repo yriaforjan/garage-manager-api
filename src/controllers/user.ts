@@ -172,7 +172,7 @@ const deleteUser = async (req: AuthRequest, res: Response) => {
     await user.save();
 
     return res.json({
-      message: "🗑 User deactivated",
+      message: "User deactivated 🗑",
     });
   } catch (error) {
     console.error(error);
