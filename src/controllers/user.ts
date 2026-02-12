@@ -11,7 +11,7 @@ const register = async (req: AuthRequest, res: Response) => {
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
-        message: "⚠️ Missing required fields",
+        message: "Missing required fields ⚠️",
       });
     }
 
@@ -21,7 +21,7 @@ const register = async (req: AuthRequest, res: Response) => {
       // SuperAdmin puede crear cualquier rol
       if (!companyId) {
         return res.status(400).json({
-          message: "⚠️ companyId is required for SuperAdmin",
+          message: "companyId is required for SuperAdmin ⚠️",
         });
       }
       finalCompanyId = companyId;
@@ -31,7 +31,7 @@ const register = async (req: AuthRequest, res: Response) => {
 
       if (!allowedRoles.includes(role)) {
         return res.status(400).json({
-          message: "⛔️ Admin cannot create this role",
+          message: "Admin cannot create this role ⛔️",
         });
       }
 
@@ -41,7 +41,7 @@ const register = async (req: AuthRequest, res: Response) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
-        message: "⚠️ User already exists",
+        message: "User already exists ⚠️",
       });
     }
 
@@ -57,7 +57,7 @@ const register = async (req: AuthRequest, res: Response) => {
     });
 
     return res.status(201).json({
-      message: "✅ User created",
+      message: "User created ✅",
       user: {
         id: newUser.id,
         name: newUser.name,
@@ -69,7 +69,7 @@ const register = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "❌ Internal server error",
+      message: "Internal server error ❌",
     });
   }
 };
@@ -80,21 +80,21 @@ const login = async (req: Request, res: Response) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "⚠️ Email and password are required",
+        message: "Email and password are required ⚠️",
       });
     }
 
     const user = await User.findOne({ email, active: true });
     if (!user) {
       return res.status(401).json({
-        message: "⛔️ Invalid credentials",
+        message: "Invalid credentials ⛔️",
       });
     }
 
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       return res.status(401).json({
-        message: "⛔️ Invalid credentials",
+        message: "Invalid credentials ⛔️",
       });
     }
 
@@ -108,7 +108,7 @@ const login = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "❌ Internal server error",
+      message: "Internal server error ❌",
     });
   }
 };
@@ -140,7 +140,7 @@ const getAllUsers = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "❌ Internal server error",
+      message: "Internal server error ❌",
     });
   }
 };
@@ -158,12 +158,12 @@ const deleteUser = async (req: AuthRequest, res: Response) => {
     // admin solo su empresa y no otros admins
     if (req.user!.role === UserRole.ADMIN) {
       if (user.companyId?.toString() !== req.companyId) {
-        return res.status(403).json({ message: "⛔️ Forbidden" });
+        return res.status(403).json({ message: "Forbidden ⛔️" });
       }
 
       if (user.role === UserRole.ADMIN) {
         return res.status(400).json({
-          message: "⛔️ Admin cannot delete another admin",
+          message: "Admin cannot delete another admin ⛔️",
         });
       }
     }
@@ -177,7 +177,7 @@ const deleteUser = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "❌ Internal server error",
+      message: "Internal server error ❌",
     });
   }
 };

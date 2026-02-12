@@ -29,7 +29,7 @@ const createCompany = async (req: AuthRequest, res: Response) => {
       !adminPassword
     ) {
       return res.status(400).json({
-        message: "⚠️ Missing required fields",
+        message: "Missing required fields ⚠️",
       });
     }
 
@@ -39,7 +39,7 @@ const createCompany = async (req: AuthRequest, res: Response) => {
     });
     if (companyExists) {
       return res.status(400).json({
-        message: "⚠️ Company already exists",
+        message: "Company already exists ⚠️",
       });
     }
 
@@ -47,7 +47,7 @@ const createCompany = async (req: AuthRequest, res: Response) => {
     const adminExists = await User.findOne({ email: adminEmail });
     if (adminExists) {
       return res.status(400).json({
-        message: "⚠️ Admin user already exists",
+        message: "Admin user already exists ⚠️",
       });
     }
 
@@ -74,7 +74,7 @@ const createCompany = async (req: AuthRequest, res: Response) => {
     });
 
     return res.status(201).json({
-      message: "✅ Company and admin created",
+      message: "Company and admin created ✅",
       company: {
         id: company.id,
         name: company.name,
@@ -91,7 +91,7 @@ const createCompany = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "❌ Internal server error",
+      message: "Internal server error ❌",
     });
   }
 };

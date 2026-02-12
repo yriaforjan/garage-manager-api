@@ -18,7 +18,7 @@ export const getMechanics = async (
     try {
         // companyId viene del middleware injectCompanyId
         if (!req.companyId) {
-            return res.status(401).json({ error: "⚠️ companyId no disponible" });
+            return res.status(401).json({ error: "companyId no disponible ⚠️" });
         }
 
         const { search } = req.query;
@@ -74,19 +74,19 @@ export const getMechanicById = async (req: AuthRequest, res: Response, _next: Ne
     try {
         //companyId viene del middleware injectCompanyId
         if (!req.companyId) {
-            return res.status(401).json({ error: "⚠️ companyId no disponible" });
+            return res.status(401).json({ error: "companyId no disponible ⚠️" });
         }
 
         const { id } = req.params;
 
         if (!isValidObjectId(id)) {
-            return res.status(400).json({ error: "⚠️ ID de mecánico inválido" })
+            return res.status(400).json({ error: "ID de mecánico inválido ⚠️" })
         }
 
         const mechanic = await Mechanic.findOne({ _id: id, companyId: req.companyId }).lean();
 
         if (!mechanic) {
-            return res.status(404).json({ error: "⚠️ Mecánico no encontrado" })
+            return res.status(404).json({ error: "Mecánico no encontrado ⚠️" })
         }
 
         return res.status(200).json(mechanic);
@@ -133,7 +133,7 @@ export const updateMechanic = async (req: AuthRequest, res: Response, _next: Nex
     try {
         // companyId viene del middleware injectCompanyId
         if (!req.companyId) {
-            return res.status(401).json({ error: "⚠️ companyId no disponible" });
+            return res.status(401).json({ error: "companyId no disponible ⚠️" });
         }
 
         const { id } = req.params;
@@ -175,7 +175,7 @@ export const deleteMechanic = async (req: AuthRequest, res: Response, _next: Nex
     try {
         // companyId viene del middleware injectCompanyId
         if (!req.companyId) {
-            return res.status(401).json({ error: "⚠️ companyId no disponible" });
+            return res.status(401).json({ error: "companyId no disponible ⚠️" });
         }
 
         const { id } = req.params;
