@@ -18,7 +18,7 @@ export const getMechanics = async (
     try {
         // companyId viene del middleware injectCompanyId
         if (!req.companyId) {
-            return res.status(401).json({ error: "companyId no disponible ⚠️" });
+            return res.status(401).json({ error: "companyId not available ⚠️" });
         }
 
         const { search } = req.query;
