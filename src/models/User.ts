@@ -30,6 +30,7 @@ const UserSchema = new Schema<UserDocument>(
       type: String,
       required: true,
       trim: true,
+      select: false,
     },
     role: {
       type: String,
@@ -50,6 +51,9 @@ const UserSchema = new Schema<UserDocument>(
   },
   { timestamps: true },
 );
+
+UserSchema.index({ companyId: 1 });
+UserSchema.index({ companyId: 1, active: 1 });
 
 UserSchema.methods.comparePassword = async function (candidate: string) {
   return bcrypt.compare(candidate, this.passwordHash);
