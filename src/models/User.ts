@@ -30,7 +30,6 @@ const UserSchema = new Schema<UserDocument>(
       type: String,
       required: true,
       trim: true,
-      
     },
     role: {
       type: String,
