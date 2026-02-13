@@ -4,8 +4,9 @@ import { User } from "../models/User";
 import { generateToken } from "../utils/jwt";
 import { UserRole } from "../types/roles";
 import { AuthRequest } from "../middleware/isAuth";
+import { isValidObjectId } from "mongoose";
 
-const register = async (req: AuthRequest, res: Response) => {
+export const register = async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, password, role, companyId } = req.body;
 
@@ -74,7 +75,7 @@ const register = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -113,7 +114,7 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-const getAllUsers = async (req: AuthRequest, res: Response) => {
+export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
     let query: any = {};
 
@@ -145,8 +146,127 @@ const getAllUsers = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getUserById = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid user id ⚠️" });
+    }
+
+    const user = await User.findById(id)
+      .select("-passwordHash")
+      .populate({
+        path: "companyId",
+        select: "name document active",
+      });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found ⚠️" });
+    }
+
+    // ADMIN: solo su empresa
+    if (req.user!.role !== UserRole.SUPER_ADMIN) {
+      if (!req.companyId || user.companyId?.toString() !== req.companyId) {
+        return res.status(403).json({ message: "Forbidden ⛔️" });
+      }
+    }
+
+    return res.json(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error ❌" });
+  }
+};
+
+export const updateUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid user id ⚠️" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found ⚠️" });
+    }
+
+    // ADMIN: solo su empresa y no tocar otros admins
+    if (req.user!.role === UserRole.ADMIN) {
+      if (!req.companyId || user.companyId?.toString() !== req.companyId) {
+        return res.status(403).json({ message: "Forbidden ⛔️" });
+      }
+
+      if (user.role === UserRole.ADMIN) {
+        return res.status(400).json({
+          message: "Admin cannot update another admin ⛔️",
+        });
+      }
+    }
+
+    const { name, email, role, active, companyId, password } = req.body as {
+      name?: string;
+      email?: string;
+      role?: UserRole;
+      active?: boolean;
+      companyId?: string;
+      password?: string; // opcional: si quieres permitir cambiar password aquí
+    };
+
+    // ADMIN solo puede asignar roles internos
+    if (req.user!.role === UserRole.ADMIN && role) {
+      const allowedRoles = [UserRole.MECHANIC, UserRole.ADMINISTRATIVE];
+      if (!allowedRoles.includes(role)) {
+        return res.status(400).json({ message: "Admin cannot set this role ⛔️" });
+      }
+    }
+
+    // Solo SUPER_ADMIN puede cambiar companyId
+    if (req.user!.role !== UserRole.SUPER_ADMIN && companyId) {
+      return res.status(403).json({ message: "Forbidden ⛔️" });
+    }
+
+    // Aplicar cambios (solo si vienen)
+    if (typeof name === "string") user.name = name.trim();
+    if (typeof email === "string") user.email = email.trim().toLowerCase();
+    if (typeof active === "boolean") user.active = active;
+
+    if (role) user.role = role;
+
+    if (req.user!.role === UserRole.SUPER_ADMIN && typeof companyId === "string") {
+      user.companyId = companyId as any; // si en tu schema companyId es ObjectId ref, esto está bien (mongoose castea)
+    }
+
+    // Cambio de password (si lo quieres aquí)
+    if (typeof password === "string" && password.length > 0) {
+      user.passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+
+    const updatedUser = await User.findById(id)
+      .select("-passwordHash")
+      .populate({ path: "companyId", select: "name document active" });
+
+    return res.json({
+      message: "User updated ✅",
+      user: updatedUser,
+    });
+  } catch (error: any) {
+    console.error(error);
+
+    // Duplicado de email (si tienes unique)
+    if (error?.code === 11000) {
+      return res.status(409).json({ message: "Email already exists ⚠️" });
+    }
+
+    return res.status(500).json({ message: "Internal server error ❌" });
+  }
+};
+
 // DELETE no elimina, solo desactiva!
-const deleteUser = async (req: AuthRequest, res: Response) => {
+export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -182,4 +302,4 @@ const deleteUser = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export { login, register, getAllUsers, deleteUser };
+
